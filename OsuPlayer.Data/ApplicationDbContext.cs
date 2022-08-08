@@ -6,12 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Milky.OsuPlayer.Data.Models;
-using Milky.OsuPlayer.Shared.Models;
-using osu_database_reader.Components.Beatmaps;
-using Collection = Milky.OsuPlayer.Data.Models.Collection;
+using Milki.OsuPlayer.Data.Models;
+using Milki.OsuPlayer.Shared.Models;
+using Collection = Milki.OsuPlayer.Data.Models.Collection;
 
-namespace Milky.OsuPlayer.Data
+namespace Milki.OsuPlayer.Data
 {
     public class ApplicationDbContext : DbContextBase
     {
@@ -94,29 +93,8 @@ namespace Milky.OsuPlayer.Data
         }
 
         // questionable
-        public async Task SyncBeatmapsFromHoLLy(IEnumerable<BeatmapEntry> entries)
+        public async Task SyncBeatmapsAsync(IReadOnlyList<Beatmap> newBeatmaps)
         {
-            var allBeatmaps = entries.Select(BeatmapConvertExtension.ParseFromHolly).ToList();
-            var allIds = allBeatmaps.Select(k => k.Id).ToList();
-
-            var nonExistAnyMore = await Beatmaps.AsNoTracking().Where(k => !allIds.Contains(k.Id)).ToListAsync();
-            if (nonExistAnyMore.Count > 0)
-                Beatmaps.RemoveRange(nonExistAnyMore);
-
-            var exists = await Beatmaps.AsNoTracking().Where(k => allIds.Contains(k.Id)).Select(k => k.Id).ToListAsync();
-            if (exists.Count > 0)
-            {
-                var existsHashSet = exists.ToHashSet();
-                Beatmaps.UpdateRange(allBeatmaps.Where(k => existsHashSet.Contains(k.Id)));
-            }
-
-            var news = allIds.Except(exists).ToHashSet();
-            if (news.Count > 0)
-            {
-                var addRange = allBeatmaps.Where(k => news.Contains(k.Id)).ToHashSet();
-                Beatmaps.AddRange(addRange);
-            }
-
             await SaveChangesAsync();
         }
 

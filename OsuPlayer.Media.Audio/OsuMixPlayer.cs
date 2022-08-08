@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Coosu.Beatmap;
 using Milki.Extensions.MixPlayer;
 using Milki.Extensions.MixPlayer.NAudioExtensions.Wave;
 using Milki.Extensions.MixPlayer.Subchannels;
-using Milky.OsuPlayer.Common;
-using Milky.OsuPlayer.Common.Configuration;
-using Milky.OsuPlayer.Media.Audio.Playlist;
+using Milki.OsuPlayer.Common;
+using Milki.OsuPlayer.Common.Configuration;
+using Milki.OsuPlayer.Media.Audio.Playlist;
 using NAudio.Wave;
 
-namespace Milky.OsuPlayer.Media.Audio
+namespace Milki.OsuPlayer.Media.Audio
 {
     public class FileCache
     {
@@ -75,7 +74,7 @@ namespace Milky.OsuPlayer.Media.Audio
         public OsuMixPlayer(LocalOsuFile osuFile) : base(AppSettings.Default?.Play?.DeviceInfo)
         {
             _osuFile = osuFile;
-            _sourceFolder = Path.GetDirectoryName(osuFile.OriginPath);
+            _sourceFolder = Path.GetDirectoryName(osuFile.OriginalPath);
             Current = this;
         }
 
@@ -91,10 +90,14 @@ namespace Milky.OsuPlayer.Media.Audio
             _fileCache = new FileCache();
             try
             {
-                if (CachedSound.DefaultSounds.Count == 0)
+                if (CachedSoundFactory.GetCount() == 0)
                 {
                     var files = new DirectoryInfo(Domain.DefaultPath).GetFiles("*.wav");
-                    await CachedSound.CreateDefaultCacheSounds(files.Select(k => k.FullName)).ConfigureAwait(false);
+                    foreach (var file in files)
+                    {
+                        await CachedSoundFactory.GetOrCreateCacheSound(Engine.WaveFormat, file.FullName)
+                            .ConfigureAwait(false);
+                    }
                 }
 
                 await InnerLoad().ConfigureAwait(false);
@@ -156,7 +159,7 @@ namespace Milky.OsuPlayer.Media.Audio
 
             InitVolume();
 
-            await CachedSound.GetOrCreateCacheSound(mp3Path);
+            await CachedSoundFactory.GetOrCreateCacheSound(Engine.WaveFormat, mp3Path);
             await BufferSoundElementsAsync();
         }
 

@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>Milky.OsuPlayer.Media.Lyric</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Milki.OsuPlayer.Media.Lyric</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,16 +5,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Coosu.Beatmap;
+using Coosu.Beatmap.Extensions;
 using Milki.Extensions.MixPlayer;
 using Milki.Extensions.MixPlayer.NAudioExtensions.Wave;
-using Milky.OsuPlayer.Common;
-using Milky.OsuPlayer.Data;
-using Milky.OsuPlayer.Data.Models;
-using Milky.OsuPlayer.Media.Audio.Playlist;
+using Milki.OsuPlayer.Common;
+using Milki.OsuPlayer.Data;
+using Milki.OsuPlayer.Data.Models;
+using Milki.OsuPlayer.Media.Audio.Playlist;
+using Milki.OsuPlayer.Presentation.Interaction;
 using Milky.OsuPlayer.Presentation.Annotations;
-using Milky.OsuPlayer.Presentation.Interaction;
 
-namespace Milky.OsuPlayer.Media.Audio
+namespace Milki.OsuPlayer.Media.Audio
 {
 
     public sealed class ObservablePlayController : VmBase, IAsyncDisposable
@@ -120,13 +121,16 @@ namespace Milky.OsuPlayer.Media.Audio
                     context.BeatmapDetail.MapPath = path;
                     context.BeatmapDetail.BaseFolder = Path.GetDirectoryName(path);
                 }
+                else
+                {
+                    PlayList.InitializeEmptyCurrentInfo();
+                }
 
                 await ClearPlayer().ConfigureAwait(false);
                 Execute.OnUiThread(() => PreLoadStarted?.Invoke(path, _cts.Token));
                 var osuFile =
                             await OsuFile.ReadFromFileAsync(path, options => options.ExcludeSection("Editor"))
                                 .ConfigureAwait(false); //50 ms
-                if (!osuFile.ReadSuccess) throw osuFile.ReadException;
 
                 var beatmap = BeatmapConvertExtension.ParseFromOSharp(osuFile);
                 if (!PlayList.HasCurrent)
@@ -217,7 +221,6 @@ namespace Milky.OsuPlayer.Media.Audio
                 {
                     Logger.Info("Start load new song from db: {0}", beatmap.BeatmapFileName);
                     osuFile = await OsuFile.ReadFromFileAsync(path).ConfigureAwait(false);
-                    if (!osuFile.ReadSuccess) throw osuFile.ReadException;
                     context.OsuFile = osuFile;
                 }
 
@@ -264,7 +267,7 @@ namespace Milky.OsuPlayer.Media.Audio
 
                 if (PlayList.PreInfo?.BeatmapDetail?.BaseFolder != PlayList.CurrentInfo?.BeatmapDetail?.BaseFolder)
                 {
-                    CachedSound.ClearCacheSounds();
+                    CachedSoundFactory.ClearCacheSounds();
                 }
 
                 Player = new OsuMixPlayer(osuFile, beatmapDetail.BaseFolder);
@@ -289,14 +292,14 @@ namespace Milky.OsuPlayer.Media.Audio
                 }
 
                 // storyboard
-                var analyzer = new OsuFileAnalyzer(osuFile);
-                if (osuFile.Events.ElementGroup.ElementList.Count > 0)
-                    Execute.OnUiThread(() => StoryboardLoadRequested?.Invoke(context, _cts.Token));
-                else
+                //var analyzer = new OsuFileAnalyzer(osuFile);
+                if (!string.IsNullOrWhiteSpace(osuFile.Events.StoryboardText))
                 {
-                    var osbFile = Path.Combine(beatmapDetail.BaseFolder, analyzer.OsbFileName);
-                    if (File.Exists(osbFile) && await OsuFile.OsbFileHasStoryboard(osbFile).ConfigureAwait(false))
-                        Execute.OnUiThread(() => StoryboardLoadRequested?.Invoke(context, _cts.Token));
+                    Execute.OnUiThread(() => StoryboardLoadRequested?.Invoke(context, _cts.Token));
+                }
+                else if (await osuFile.OsuFileHasOsbStoryboard().ConfigureAwait(false))
+                {
+                    Execute.OnUiThread(() => StoryboardLoadRequested?.Invoke(context, _cts.Token));
                 }
 
                 context.FullLoaded = true;
