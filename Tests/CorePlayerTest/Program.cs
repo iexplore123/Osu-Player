@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Coosu.Beatmap;
 using Microsoft.Extensions.Logging;
 using Milki.Extensions.MixPlayer;
-using Milky.OsuPlayer.Media.Audio;
+using Milki.OsuPlayer.Media.Audio;
 
 namespace CorePlayerTest
 {
@@ -26,11 +26,6 @@ namespace CorePlayerTest
                        "Risshuu feat. Choko - Take (yf_bmp) [Ta~ke take take take take take tatata~].osu";
             var folder = Path.GetDirectoryName(path);
             var osuFile = await OsuFile.ReadFromFileAsync(path);
-            if (!osuFile.ReadSuccess)
-            {
-                throw osuFile.ReadException;
-            }
-
             var player = new OsuMixPlayer(osuFile);
             await player.Initialize();
 

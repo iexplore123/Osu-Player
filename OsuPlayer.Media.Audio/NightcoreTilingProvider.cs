@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Coosu.Beatmap;
 using Milki.Extensions.MixPlayer;
-using Milky.OsuPlayer.Common;
+using Milki.OsuPlayer.Common;
 
-namespace Milky.OsuPlayer.Media.Audio
+namespace Milki.OsuPlayer.Media.Audio
 {
     internal class NightcoreTilingProvider : ISoundElementsProvider
     {
@@ -68,7 +68,7 @@ namespace Milky.OsuPlayer.Media.Audio
         public async Task<IEnumerable<SoundElement>> GetSoundElements()
         {
             var timingSection = _osuFile.TimingPoints;
-            var redLines = timingSection.TimingList.Where(k => !k.Inherit);
+            var redLines = timingSection.TimingList.Where(k => !k.IsInherit);
             var allTimings = timingSection.GetInterval(0.5);
             var redlineGroups = redLines
                 .Select(k =>

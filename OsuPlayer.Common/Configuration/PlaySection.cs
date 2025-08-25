@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Milki.Extensions.MixPlayer.Devices;
+using Milki.OsuPlayer.Shared.Models;
 using Milky.OsuPlayer.Presentation.Annotations;
-using Milky.OsuPlayer.Shared.Models;
 using Newtonsoft.Json;
 
-namespace Milky.OsuPlayer.Common.Configuration
+namespace Milki.OsuPlayer.Common.Configuration
 {
     public class PlaySection : INotifyPropertyChanged
     {
@@ -42,7 +42,7 @@ namespace Milky.OsuPlayer.Common.Configuration
 
         public bool AutoPlay { get; set; } = false;
         public bool Memory { get; set; } = true;
-        public DeviceInfo DeviceInfo { get; set; } = null;
+        public DeviceDescription DeviceInfo { get; set; } = null;
         public int DesiredLatency { get; set; } = 5;
         public bool IsExclusive { get; set; } = false;
         public PlaylistMode PlayListMode { get; set; } = PlaylistMode.Normal;
